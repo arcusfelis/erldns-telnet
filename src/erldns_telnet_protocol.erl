@@ -23,6 +23,7 @@
 -define(DEFAULT_INACTIVITY_TIMEOUT, infinity).
 -define(DEFAULT_SEPARATOR, [<<"\r\n">>, <<"\r">>, <<"\n">>]).
 -define(DEFAULT_ERDNS_NODE, erldns). % node name
+-define(SUCCESS_REPLY, <<"OK\r\n">>).
 
 -record(state, {socket, transport, acc, separator, inactivity_timeout, erldns_node}).
 
@@ -64,10 +65,12 @@ handle_info({tcp_closed, Socket}, State) ->
 handle_info({tcp_error, Socket, Reason}, State) ->
     lager:info("issue=\"TCP error\", socket=~p, reason=~p", [Socket, Reason]),
 	{stop, Reason, State};
-handle_info({register_name, DnsName, IpAddress}, State=#state{erldns_node=ErldnsNode}) ->
+handle_info({register_name, DnsName, IpAddress}, State=#state{
+            socket=Socket, transport=Transport, erldns_node=ErldnsNode}) ->
     lager:info("issue=\"Handle register name command\", name=~p, ip=~p",
                [DnsName, IpAddress]),
     handle_register_name(ErldnsNode, DnsName, IpAddress),
+    Transport:send(Socket, ?SUCCESS_REPLY),
 	{stop, normal, State};
 handle_info(timeout, State) ->
     lager:info("issue=\"Inactivity timeout, stop\"", []),
