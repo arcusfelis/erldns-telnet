@@ -1,0 +1,16 @@
+{application, erldns_telnet, [
+	{description, "Simple telnet interface for erldns"},
+	{vsn, "1"},
+	{modules, []},
+	{registered, [erldns_telnet_app]},
+	{applications, [
+		kernel,
+		stdlib,
+		ranch
+	]},
+	{mod, {erldns_telnet_app, []}},
+	{env, [
+        {listen_port, 5322},
+        {erldns_node, erldns}
+        ]}
+]}.
